@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: int_user_login_summary
+    description: "Per-user aggregation of all login activity — the building block for ATO detection"
+    columns:
+      - name: user_id
+        tests:
+          - unique
+          - not_null
+      - name: failure_rate
+        description: "Fraction of login attempts that failed (0.0–1.0)"
+      - name: distinct_ips
+        description: "Count of unique IP addresses ever seen for this user"
+      - name: distinct_devices
+        description: "Count of unique devices ever associated with this user"
+      - name: distinct_countries
+        description: "Count of unique countries login attempts originated from"
+
+  - name: int_ip_request_summary
+    description: "Per-IP, per-day HTTP request volume — used to detect volumetric anomalies"
+    columns:
+      - name: ip_address
+        tests:
+          - not_null
+      - name: request_date
+        tests:
+          - not_null
+      - name: total_requests
+        description: "Total HTTP requests from this IP on this day"
+      - name: error_rate
+        description: "Fraction of requests that returned a 4xx/5xx status (0.0–1.0)"
+
+  - name: int_device_fingerprint
+    description: "Device registry enriched with login behavior — surfaces suspicious device patterns"
+    columns:
+      - name: device_id
+        tests:
+          - unique
+          - not_null
+      - name: login_attempts
+        description: "Total login attempts associated with this device"
+      - name: distinct_ips
+        description: "Count of unique IPs this device has been seen from"

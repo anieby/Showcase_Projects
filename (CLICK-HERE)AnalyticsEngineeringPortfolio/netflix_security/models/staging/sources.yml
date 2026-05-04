@@ -1,0 +1,53 @@
+version: 2
+
+sources:
+  - name: security_raw
+    description: "Raw security event data loaded by data_generation/generate_data.py"
+    schema: main
+    tables:
+      - name: raw_login_events
+        description: "One row per login attempt — includes both successes and failures"
+        columns:
+          - name: event_id
+            tests:
+              - unique
+              - not_null
+          - name: user_id
+            tests:
+              - not_null
+          - name: ip_address
+            tests:
+              - not_null
+          - name: device_id
+            tests:
+              - not_null
+          - name: event_timestamp
+            tests:
+              - not_null
+          - name: success
+            tests:
+              - not_null
+
+      - name: raw_request_logs
+        description: "One row per HTTP request — includes normal, bot, and DDoS traffic"
+        columns:
+          - name: request_id
+            tests:
+              - unique
+              - not_null
+          - name: ip_address
+            tests:
+              - not_null
+          - name: request_timestamp
+            tests:
+              - not_null
+
+      - name: raw_devices
+        description: "Device registry — one row per device per user"
+        columns:
+          - name: device_id
+            tests:
+              - not_null
+          - name: user_id
+            tests:
+              - not_null

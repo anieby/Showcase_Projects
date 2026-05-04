@@ -1,0 +1,69 @@
+version: 2
+
+models:
+  - name: mart_ato_signals
+    description: >
+      Account Takeover (ATO) risk signals. Flags users exhibiting high failure
+      rates across many IPs — a pattern consistent with credential attacks
+      followed by unauthorized access.
+    columns:
+      - name: user_id
+        tests:
+          - unique
+          - not_null
+      - name: failure_rate
+        description: "Fraction of all login attempts that failed"
+      - name: distinct_ips
+        description: "Number of unique source IPs — high values indicate account sharing or attack"
+      - name: failures_last_7_days
+        description: "Recent failure count — distinguishes active attacks from historical patterns"
+      - name: ato_risk_level
+        description: "HIGH / MEDIUM / LOW / INFORMATIONAL — based on failure_rate × distinct_ips"
+
+  - name: mart_credential_stuffing_signals
+    description: >
+      Credential stuffing signals at the IP level. IPs that attempt authentication
+      against many distinct user accounts with a high failure rate are flagged.
+    columns:
+      - name: ip_address
+        tests:
+          - unique
+          - not_null
+      - name: distinct_users_targeted
+        description: "Number of unique accounts attempted from this IP"
+      - name: failure_rate
+        description: "Fraction of attempts that failed — credential stuffing typically > 90%"
+      - name: credential_stuffing_risk
+        description: "HIGH / MEDIUM / LOW / INFORMATIONAL"
+
+  - name: mart_ddos_signals
+    description: >
+      DDoS and volumetric bot signals. Daily request volume per IP is compared
+      against a statistical baseline; IPs in the upper tail are flagged.
+    columns:
+      - name: ip_address
+        tests:
+          - not_null
+      - name: request_date
+        tests:
+          - not_null
+      - name: total_requests
+        description: "Total requests from this IP on this day"
+      - name: z_score
+        description: "Standard deviations above the mean — used to rank severity"
+      - name: ddos_risk_level
+        description: "HIGH (p99+) / MEDIUM (p95+) / LOW (3× mean+) / INFORMATIONAL"
+
+  - name: mart_device_ecosystem
+    description: >
+      Per-user device ecosystem summary. Users with many untrusted devices or
+      devices appearing immediately before failed login spikes are high-risk.
+    columns:
+      - name: user_id
+        tests:
+          - unique
+          - not_null
+      - name: untrusted_device_rate
+        description: "Fraction of this user's devices that are untrusted (0.0–1.0)"
+      - name: device_risk_profile
+        description: "HIGH_RISK / MEDIUM_RISK / LOW_RISK / NORMAL"
